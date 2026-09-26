@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Silver Compass — App design &amp; development</title>
+<meta name="description" content="Silver Compass designs and builds apps for the Google Play Store, with the interface treated as the main event: layout, motion, and the details that make an app feel right.">
+<meta name="theme-color" content="#08090b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%AD%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08090b;
+    --bg-elevated:#101114;
+    --surface:rgba(255,255,255,0.045);
+    --surface-strong:rgba(255,255,255,0.075);
+    --border:rgba(255,255,255,0.10);
+    --border-strong:rgba(255,255,255,0.18);
+    --ink:#eef0f2;
+    --ink-dim:#9a9da6;
+    --ink-faint:#6b6e77;
+    --silver-100:#f4f5f7;
+    --silver-300:#c7cad2;
+    --silver-500:#8b8f9b;
+    --silver-700:#52555f;
+    --radius-card:20px;
+    --radius-pill:999px;
+    --maxw:1180px;
+    --font-display:'Space Grotesk','Segoe UI',sans-serif;
+    --font-body:'Inter','Segoe UI',sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  img,svg{display:block;max-width:100%;}
+  a{color:inherit;}
+  h1,h2,h3{
+    font-family:var(--font-display);
+    line-height:1.15;
+    margin:0;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  p{margin:0;}
+  ul,ol{margin:0;padding:0;list-style:none;}
+  section{scroll-margin-top:88px;}
+
+  .skip-link{
+    position:absolute;
+    left:-9999px;
+    top:0;
+    background:var(--silver-100);
+    color:#0b0c0e;
+    padding:10px 18px;
+    border-radius:0 0 10px 0;
+    z-index:200;
+    font-weight:600;
+  }
+  .skip-link:focus{left:0;}
+
+  :focus-visible{
+    outline:2px solid var(--silver-300);
+    outline-offset:3px;
+    border-radius:4px;
+  }
+
+  .wrap{
+    max-width:var(--maxw);
+    margin:0 auto;
+    padding:0 32px;
+  }
+
+  /* ---------- Nav ---------- */
+  .nav{
+    position:fixed;
+    top:0;left:0;right:0;
+    z-index:100;
+    background:rgba(8,9,11,0.65);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+  .nav-inner{
+    max-width:var(--maxw);
+    margin:0 auto;
+    padding:16px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:1.1rem;
+    text-decoration:none;
+    color:var(--ink);
+  }
+  .brand svg{width:26px;height:26px;flex:none;}
+  .nav-links{
+    display:flex;
+    align-items:center;
+    gap:32px;
+  }
+  .nav-links a{
+    text-decoration:none;
+    color:var(--ink-dim);
+    font-size:0.95rem;
+    transition:color .15s ease;
+  }
+  .nav-links a:hover{color:var(--ink);}
+  .nav-cta{display:flex;align-items:center;gap:18px;}
+  .nav-toggle{
+    display:none;
+    background:none;
+    border:1px solid var(--border-strong);
+    border-radius:10px;
+    width:40px;height:40px;
+    align-items:center;justify-content:center;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .nav-toggle svg{width:18px;height:18px;}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:13px 26px;
+    border-radius:var(--radius-pill);
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:0.95rem;
+    text-decoration:none;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:transform .15s ease, opacity .15s ease, border-color .15s ease;
+    white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn-primary{
+    background:linear-gradient(135deg,var(--silver-100),var(--silver-300));
+    color:#0b0c0e;
+  }
+  .btn-primary:hover{opacity:0.92;}
+  .btn-ghost{
+    background:transparent;
+    border-color:var(--border-strong);
+    color:var(--ink);
+  }
+  .btn-ghost:hover{border-color:var(--silver-300);}
+  .btn-small{padding:10px 20px;font-size:0.85rem;}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding:168px 0 96px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero-watermark{
+    position:absolute;
+    top:34%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:clamp(6rem, 19vw, 14rem);
+    letter-spacing:-0.02em;
+    white-space:nowrap;
+    background:linear-gradient(100deg, rgba(244,245,247,0.12), rgba(244,245,247,0.03) 55%, rgba(244,245,247,0) 85%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    pointer-events:none;
+    user-select:none;
+    z-index:0;
+  }
+  .hero-inner{
+    position:relative;
+    z-index:1;
+    display:grid;
+    grid-template-columns:1.05fr 0.95fr;
+    gap:56px;
+    align-items:center;
+  }
+  .hero-copy h1{
+    font-size:clamp(2.4rem, 3.4vw + 1.2rem, 3.6rem);
+  }
+  .hero-copy .lead{
+    margin-top:22px;
+    max-width:46ch;
+    color:var(--ink-dim);
+    font-size:1.05rem;
+  }
+  .hero-actions{
+    margin-top:34px;
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+
+  .hero-visual{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:340px;
+  }
+  .hero-glow{
+    position:absolute;
+    width:560px;height:560px;
+    background:radial-gradient(circle, rgba(139,143,155,0.32), rgba(139,143,155,0) 68%);
+    filter:blur(14px);
+    z-index:0;
+  }
+  .compass-svg{
+    position:relative;
+    z-index:1;
+    width:min(420px, 90%);
+    height:auto;
+  }
+
+  /* ---------- Section heads ---------- */
+  .section{padding:88px 0;}
+  .section-alt{background:var(--bg-elevated);}
+  .section-head{
+    max-width:560px;
+    margin-bottom:52px;
+  }
+  .section-head h2{
+    font-size:clamp(1.7rem, 1.6vw + 1.1rem, 2.3rem);
+  }
+  .section-head p{
+    margin-top:14px;
+    color:var(--ink-dim);
+    font-size:1.02rem;
+  }
+
+  /* ---------- Services ---------- */
+  .cards-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(240px, 340px));
+    justify-content:center;
+    gap:20px;
+  }
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-card);
+    padding:28px 24px;
+  }
+  .card-icon{
+    width:42px;height:42px;
+    border-radius:12px;
+    background:var(--surface-strong);
+    border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:20px;
+    color:var(--silver-300);
+  }
+  .card-icon svg{width:22px;height:22px;}
+  .card h3{font-size:1.05rem;margin-bottom:10px;}
+  .card p{color:var(--ink-dim);font-size:0.93rem;}
+
+  /* ---------- Process ---------- */
+  .timeline{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:20px;
+  }
+  .timeline li{
+    position:relative;
+    padding-top:28px;
+    border-top:1px solid var(--border);
+  }
+  .step-num{
+    position:absolute;
+    top:-13px;left:0;
+    width:26px;height:26px;
+    border-radius:50%;
+    background:var(--bg);
+    border:1px solid var(--border-strong);
+    color:var(--silver-300);
+    font-family:var(--font-display);
+    font-size:0.8rem;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .timeline h3{font-size:1rem;margin-bottom:8px;}
+  .timeline p{color:var(--ink-dim);font-size:0.9rem;}
+
+  /* ---------- Work ---------- */
+  .work-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px, 340px));
+    justify-content:start;
+    gap:22px;
+  }
+  .app-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-card);
+    padding:26px;
+  }
+  .app-icon{
+    width:56px;height:56px;
+    border-radius:16px;
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:20px;
+    color:#0b0c0e;
+  }
+  .app-icon svg{width:32px;height:32px;}
+  .icon-board{background:var(--silver-100);border:1px solid var(--border-strong);}
+  .icon-multiply{background:var(--silver-100);border:1px solid var(--border-strong);}
+  .app-card h3{font-size:1.1rem;}
+  .app-tag{
+    display:inline-block;
+    margin-top:8px;
+    padding:4px 12px;
+    border:1px solid var(--border-strong);
+    border-radius:var(--radius-pill);
+    background:var(--surface-strong);
+    color:var(--ink-dim);
+    font-size:0.78rem;
+  }
+  .app-card p.desc{
+    margin-top:14px;
+    color:var(--ink-dim);
+    font-size:0.93rem;
+  }
+  .app-card .btn{margin-top:18px;}
+
+  /* ---------- CTA panel ---------- */
+  .cta-outer{position:relative;}
+  .cta-panel{
+    position:relative;
+    margin:0 32px;
+    max-width:calc(var(--maxw) - 64px);
+    margin-inline:auto;
+    border-radius:28px;
+    background:var(--bg-elevated);
+    border:1px solid var(--border);
+    padding:64px 56px;
+    overflow:hidden;
+  }
+  .cta-glow{
+    position:absolute;
+    right:-140px;top:50%;
+    transform:translateY(-50%);
+    width:460px;height:460px;
+    border-radius:50%;
+    background:
+      conic-gradient(from 0deg, rgba(255,255,255,0.14), rgba(139,143,155,0.32) 30%, rgba(16,17,20,0) 55%, rgba(139,143,155,0.22) 78%, rgba(255,255,255,0.12)),
+      radial-gradient(circle, rgba(139,143,155,0.30), rgba(139,143,155,0) 70%);
+    filter:blur(10px);
+  }
+  .cta-halo{
+    position:absolute;
+    top:-72px;right:70px;
+    width:280px;height:280px;
+    border-radius:50%;
+    background:
+      radial-gradient(circle at 35% 32%, rgba(255,255,255,0.35), rgba(255,255,255,0) 55%),
+      radial-gradient(circle at 62% 68%, rgba(139,143,155,0.4), rgba(139,143,155,0) 60%),
+      radial-gradient(circle, rgba(30,32,38,0.85), rgba(10,11,13,0) 72%);
+    filter:blur(20px);
+    pointer-events:none;
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .cta-glow{animation:glowSpin 46s linear infinite;}
+    .cta-halo{animation:haloDrift 16s ease-in-out infinite;}
+  }
+  @keyframes glowSpin{
+    from{transform:translateY(-50%) rotate(0deg);}
+    to{transform:translateY(-50%) rotate(360deg);}
+  }
+  @keyframes haloDrift{
+    0%{transform:rotate(0deg) scale(1);}
+    50%{transform:rotate(6deg) scale(1.05);}
+    100%{transform:rotate(0deg) scale(1);}
+  }
+  .cta-content{position:relative;z-index:1;max-width:520px;}
+  .cta-content h2{font-size:clamp(1.7rem, 1.8vw + 1rem, 2.4rem);}
+  .cta-content p{margin-top:16px;color:var(--ink-dim);}
+  .cta-content .btn{margin-top:28px;}
+
+  /* ---------- Contact ---------- */
+  .contact-box{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-card);
+    padding:36px 40px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+    flex-wrap:wrap;
+  }
+  .contact-email{
+    font-family:var(--font-display);
+    font-size:1.15rem;
+    color:var(--silver-100);
+  }
+  .contact-actions{display:flex;gap:12px;flex-wrap:wrap;}
+
+  /* ---------- Footer ---------- */
+  footer{
+    border-top:1px solid var(--border);
+    padding:56px 0 28px;
+  }
+  .footer-inner{
+    display:grid;
+    grid-template-columns:1.3fr 1fr 1fr;
+    gap:40px;
+  }
+  .footer-brand{max-width:280px;}
+  .footer-brand .brand{margin-bottom:10px;}
+  .footer-brand p{color:var(--ink-faint);font-size:0.9rem;}
+  .footer-col{display:flex;flex-direction:column;min-width:0;}
+  .footer-heading{
+    font-family:var(--font-display);
+    font-size:0.85rem;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:16px;
+  }
+  .footer-links{display:flex;flex-direction:column;gap:12px;}
+  .footer-links a{
+    color:var(--ink-dim);
+    text-decoration:none;
+    font-size:0.9rem;
+  }
+  .footer-links a:hover{color:var(--ink);}
+  .footer-email{
+    color:var(--ink-dim);
+    text-decoration:none;
+    font-size:0.9rem;
+  }
+  .footer-email:hover{color:var(--ink);}
+  .footer-note{
+    margin-top:10px;
+    color:var(--ink-faint);
+    font-size:0.82rem;
+  }
+  .footer-bottom{
+    margin-top:40px;
+    padding-top:24px;
+    border-top:1px solid var(--border);
+    color:var(--ink-faint);
+    font-size:0.82rem;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .footer-icon{
+    width:36px;height:36px;
+    border:1px solid var(--border-strong);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--ink-dim);
+    text-decoration:none;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  .footer-icon:hover{color:var(--ink);border-color:var(--silver-300);}
+  .footer-icon svg{width:16px;height:16px;}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:980px){
+    .cards-grid{grid-template-columns:repeat(2,1fr);}
+    .timeline{grid-template-columns:repeat(2,1fr);row-gap:36px;}
+  }
+  @media (max-width:860px){
+    .hero-inner{grid-template-columns:1fr;}
+    .hero-visual{order:-1;min-height:260px;}
+    .compass-svg{width:min(300px,80%);}
+    .nav-links{display:none;}
+    .nav-toggle{display:flex;}
+    .nav.open .nav-links{
+      display:flex;
+      position:absolute;
+      top:100%;left:0;right:0;
+      background:var(--bg-elevated);
+      border-bottom:1px solid var(--border);
+      flex-direction:column;
+      align-items:flex-start;
+      padding:20px 32px 28px;
+      gap:18px;
+    }
+  }
+  @media (max-width:640px){
+    .wrap,.nav-inner{padding-left:20px;padding-right:20px;}
+    .cards-grid{grid-template-columns:1fr;}
+    .timeline{grid-template-columns:1fr;}
+    .work-grid{grid-template-columns:1fr;}
+    .cta-panel{margin:0 20px;padding:44px 28px;}
+    .contact-box{padding:28px 24px;}
+    .hero{padding-top:140px;}
+    .footer-inner{grid-template-columns:1fr;}
+    .hero-watermark{opacity:0.7;}
+  }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav" id="siteNav">
+  <div class="nav-inner">
+    <a class="brand" href="#home">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="16" r="13.5" stroke="url(#navRing)" stroke-width="2.4"/>
+        <path d="M16 7.2 L19.4 16 L16 18.5 L12.6 16 Z" fill="#f6f7f9"/>
+        <path d="M16 24.8 L19.4 16 L16 13.5 L12.6 16 Z" fill="#545761"/>
+        <circle cx="16" cy="16" r="2.1" fill="#0b0c0e" stroke="#eef0f2" stroke-width="1"/>
+        <defs>
+          <linearGradient id="navRing" x1="0" y1="0" x2="32" y2="32">
+            <stop offset="0%" stop-color="#f4f5f7"/>
+            <stop offset="100%" stop-color="#52555f"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      Silver Compass
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#home">Home</a>
+      <a href="#work">Apps</a>
+      <a href="#services">Services</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#process">Process</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="#contact" class="btn btn-primary btn-small">Get in touch</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero" id="home">
+    <div class="hero-watermark" aria-hidden="true">COMPASS</div>
+    <div class="wrap hero-inner">
+      <div class="hero-copy">
+        <h1>This is the way</h1>
+        <p class="lead">Silver Compass is a small app development group. For now, we build apps for the web and the Google Play Store — every project starts as a concept in Figma before any code gets written.</p>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-glow"></div>
+        <svg class="compass-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="dialGrad" cx="36%" cy="28%" r="82%">
+              <stop offset="0%" stop-color="#35373f"/>
+              <stop offset="38%" stop-color="#202226"/>
+              <stop offset="64%" stop-color="#17181b"/>
+              <stop offset="80%" stop-color="#565962"/>
+              <stop offset="91%" stop-color="#9296a0"/>
+              <stop offset="97%" stop-color="#b8bbc3"/>
+              <stop offset="100%" stop-color="#6c6f78"/>
+            </radialGradient>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#f4f5f7"/>
+              <stop offset="50%" stop-color="#8b8f9b"/>
+              <stop offset="100%" stop-color="#4c4f57"/>
+            </linearGradient>
+            <filter id="needleShadow" x="-60%" y="-60%" width="220%" height="220%">
+              <feDropShadow dx="5" dy="7" stdDeviation="6" flood-color="#000000" flood-opacity="0.5"/>
+            </filter>
+            <filter id="softBlur" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="12"/>
+            </filter>
+          </defs>
+          <ellipse cx="200" cy="362" rx="116" ry="16" fill="#000000" opacity="0.32" filter="url(#softBlur)"/>
+          <circle cx="200" cy="200" r="150" fill="url(#dialGrad)" stroke="url(#ringGrad)" stroke-width="2.4"/>
+          <ellipse cx="150" cy="118" rx="66" ry="42" fill="#ffffff" opacity="0.14" filter="url(#softBlur)" transform="rotate(-18 150 118)"/>
+          <g class="needle" filter="url(#needleShadow)">
+            <polygon points="200,56 200,215 177,200" fill="#f6f7f9"/>
+            <polygon points="200,56 223,200 200,215" fill="#83878f"/>
+            <polygon points="200,344 200,185 177,200" fill="#54575f"/>
+            <polygon points="200,344 223,200 200,185" fill="#1e2024"/>
+          </g>
+          <circle cx="200" cy="200" r="14" fill="#eef0f2" stroke="#1d1e22" stroke-width="3"/>
+          <circle cx="200" cy="200" r="14" fill="none" stroke="#ffffff" stroke-width="0.8" opacity="0.35"/>
+          <text x="200" y="368" text-anchor="middle" fill="#c7cad2" font-size="14" font-family="Space Grotesk, sans-serif" letter-spacing="2">SILVER</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="work">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Apps</h2>
+        <p>What we currently have in progress for the Google Play Store.</p>
+      </div>
+      <div class="work-grid">
+        <article class="app-card">
+          <div class="app-icon icon-board">
+            <svg viewBox="0 0 24 24" fill="#0b0c0e" stroke="#0b0c0e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <g transform="translate(-1.4,0)">
+                <circle cx="6" cy="12" r="2.3"/>
+                <circle cx="18" cy="6" r="2.3"/>
+                <circle cx="18" cy="18" r="2.3"/>
+                <line x1="8.1" y1="10.9" x2="15.9" y2="7.1"/>
+                <line x1="8.1" y1="13.1" x2="15.9" y2="16.9"/>
+              </g>
+            </svg>
+          </div>
+          <h3>Connect</h3>
+          <span class="app-tag">App</span>
+          <p class="desc">Visualization board, connect your finances.</p>
+          <a href="connect/privacypolicy.html" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-small">Privacy Policy</a>
+        </article>
+        <article class="app-card">
+          <div class="app-icon icon-multiply">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0b0c0e" stroke-width="2.4" stroke-linecap="round">
+              <line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18"/>
+            </svg>
+          </div>
+          <h3>Multiplication</h3>
+          <span class="app-tag">Game</span>
+          <p class="desc">Currently in progress. More details soon.</p>
+          <a href="multiplication/privacypolicy.html" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-small">Privacy Policy</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="reviews">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Enjoying the app?</h2>
+        <p>A five-star rating on the Google Play Store goes a long way for a small studio. If something's not working right, email us first — silver.compass.dev@proton.me — before leaving a bad review. We'd rather fix it than lose a star over something we didn't know about.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="services">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>What we handle</h2>
+        <p>Two things, done properly.</p>
+      </div>
+      <div class="cards-grid">
+        <article class="card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="6" width="14" height="15" rx="2.5"/>
+              <rect x="8" y="3" width="14" height="15" rx="2.5" fill="#0c0d10"/>
+            </svg>
+          </div>
+          <h3>Interface design</h3>
+          <p>Every app starts as a concept in Figma, worked through screen by screen before any of it gets built.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 6 3 12 9 18"/>
+              <polyline points="15 6 21 12 15 18"/>
+            </svg>
+          </div>
+          <h3>App development</h3>
+          <p>Built as a native Android app or a web app, whichever fits the project. That's the scope for now, kept deliberately narrow.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pricing">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>No subscriptions</h2>
+        <p>We don't charge people every month for an app. Every app we make is either free, or a one-time lifetime purchase.</p>
+      </div>
+      <div class="cards-grid">
+        <article class="card">
+          <h3>Free tier</h3>
+          <p>A version anyone can use at no cost.</p>
+        </article>
+        <article class="card">
+          <h3>Lifetime purchase</h3>
+          <p>Pay once, keep it. No recurring charges, ever.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="process">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>How a project runs</h2>
+        <p>Five stages, start to Play Store, in roughly that order.</p>
+      </div>
+      <ol class="timeline">
+        <li>
+          <span class="step-num">1</span>
+          <h3>Discover</h3>
+          <p>A call to understand the app, the people using it, and any platform constraints.</p>
+        </li>
+        <li>
+          <span class="step-num">2</span>
+          <h3>Design</h3>
+          <p>Wireframes, then high-fidelity screens covering every state, not just the happy path.</p>
+        </li>
+        <li>
+          <span class="step-num">3</span>
+          <h3>Build</h3>
+          <p>Development against the approved designs, checked in as it goes.</p>
+        </li>
+        <li>
+          <span class="step-num">4</span>
+          <h3>Test</h3>
+          <p>A device and usability pass to catch what only shows up outside a design file.</p>
+        </li>
+        <li>
+          <span class="step-num">5</span>
+          <h3>Ship</h3>
+          <p>Play Store submission, plus support once real users start finding the app.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap cta-outer">
+      <div class="cta-halo" aria-hidden="true"></div>
+      <div class="cta-panel">
+        <div class="cta-glow" aria-hidden="true"></div>
+        <div class="cta-content">
+          <h2>Have an app worth building properly?</h2>
+          <p>We keep a small number of projects running at a time, so every screen gets real attention before it ships.</p>
+          <a href="#contact" class="btn btn-primary">Get in touch</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="contact">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Get in touch</h2>
+        <p>Tell us about the app. We reply within a couple of business days.</p>
+        <p>We're also recruiting developers. If you want to join Silver Compass, reach out at the same address.</p>
+      </div>
+      <div class="contact-box">
+        <span class="contact-email">silver.compass.dev@proton.me</span>
+        <div class="contact-actions">
+          <a href="mailto:silver.compass.dev@proton.me" class="btn btn-primary">Email us</a>
+          <button type="button" class="btn btn-ghost" id="copyEmailBtn">Copy email</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      <a class="brand" href="#home">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="13.5" stroke="url(#footRing)" stroke-width="2.4"/>
+          <path d="M16 7.2 L19.4 16 L16 18.5 L12.6 16 Z" fill="#f6f7f9"/>
+          <path d="M16 24.8 L19.4 16 L16 13.5 L12.6 16 Z" fill="#545761"/>
+          <circle cx="16" cy="16" r="2.1" fill="#0b0c0e" stroke="#eef0f2" stroke-width="1"/>
+          <defs>
+            <linearGradient id="footRing" x1="0" y1="0" x2="32" y2="32">
+              <stop offset="0%" stop-color="#f4f5f7"/>
+              <stop offset="100%" stop-color="#52555f"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        Silver Compass
+      </a>
+      <p>Apps, designed properly, from a small dev group that specializes in interface work.</p>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-heading">Site</h4>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="#home">Home</a>
+        <a href="#work">Apps</a>
+        <a href="#services">Services</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#process">Process</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-heading">Get in touch</h4>
+      <a class="footer-email" href="mailto:silver.compass.dev@proton.me">silver.compass.dev@proton.me</a>
+      <p class="footer-note">Usually reply within 2 business days.</p>
+    </div>
+  </div>
+  <div class="wrap footer-bottom">
+    <p>© 2026 Silver Compass. All rights reserved.</p>
+    <a class="footer-icon" href="mailto:silver.compass.dev@proton.me" aria-label="Email Silver Compass">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="5" width="18" height="14" rx="2"/>
+        <path d="M4 7 L12 13 L20 7"/>
+      </svg>
+    </a>
+  </div>
+</footer>
+
+<script>
+  // Mobile nav toggle
+  (function(){
+    var nav = document.getElementById('siteNav');
+    var toggle = document.getElementById('navToggle');
+    toggle.addEventListener('click', function(){
+      var open = nav.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    nav.querySelectorAll('.nav-links a').forEach(function(link){
+      link.addEventListener('click', function(){
+        nav.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+  })();
+
+  // Compass needle follows the cursor
+  (function(){
+    var svg = document.querySelector('.compass-svg');
+    var needle = svg && svg.querySelector('.needle');
+    if(!svg || !needle) return;
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var targetRotation = 0;
+    var currentRotation = 0;
+    var hasPointer = false;
+
+    function angleDiff(target, current){
+      var d = (target - current) % 360;
+      if(d > 180) d -= 360;
+      if(d < -180) d += 360;
+      return d;
+    }
+
+    function onMove(e){
+      var rect = svg.getBoundingClientRect();
+      var cx = rect.left + rect.width / 2;
+      var cy = rect.top + rect.height / 2;
+      var dx = e.clientX - cx;
+      var dy = e.clientY - cy;
+      var mouseAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+      targetRotation = mouseAngle + 90;
+      hasPointer = true;
+    }
+    function onLeave(e){
+      if(!e.relatedTarget && !e.toElement){
+        hasPointer = false;
+        targetRotation = 0;
+      }
+    }
+    window.addEventListener('mousemove', onMove, {passive:true});
+    window.addEventListener('mouseout', onLeave, {passive:true});
+
+    function tick(){
+      var diff = angleDiff(hasPointer ? targetRotation : 0, currentRotation);
+      currentRotation += diff * 0.12;
+      needle.setAttribute('transform', 'rotate(' + currentRotation.toFixed(2) + ' 200 200)');
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  // Copy email
+  (function(){
+    var btn = document.getElementById('copyEmailBtn');
+    if(!btn) return;
+    var email = 'silver.compass.dev@proton.me';
+    var defaultLabel = btn.textContent;
+    btn.addEventListener('click', function(){
+      function done(ok){
+        btn.textContent = ok ? 'Copied' : 'Couldn\u2019t copy';
+        setTimeout(function(){ btn.textContent = defaultLabel; }, 1800);
+      }
+      try{
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(email).then(function(){ done(true); }).catch(function(){ done(false); });
+        } else {
+          var ta = document.createElement('textarea');
+          ta.value = email;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          done(true);
+        }
+      } catch(e){
+        done(false);
+      }
+    });
+  })();
+</script>
+
+</body>
+</html>
